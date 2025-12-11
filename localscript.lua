@@ -39,10 +39,89 @@ screenGui.Parent = playerGui
 
 -- ==================== FUNCIONES AUXILIARES DE UI ====================
 
-local function CreateTween(obj, props, time)
-    local tween = TweenService:Create(obj, TweenInfo.new(time or 0.3, Enum.EasingStyle.Quad), props)
+local function CreateTween(obj, props, time, style, direction)
+    local tweenInfo = TweenInfo.new(
+        time or 0.3, 
+        style or Enum.EasingStyle.Quad, 
+        direction or Enum.EasingDirection.Out,
+        0, false, 0
+    )
+    local tween = TweenService:Create(obj, tweenInfo, props)
     tween:Play()
     return tween
+end
+
+-- Animaciones especiales
+local function PulseAnimation(obj)
+    local pulse = CreateTween(obj, {Size = obj.Size + UDim2.new(0, 10, 0, 10)}, 0.5, Enum.EasingStyle.Elastic)
+    pulse.Completed:Connect(function()
+        CreateTween(obj, {Size = obj.Size - UDim2.new(0, 10, 0, 10)}, 0.5, Enum.EasingStyle.Elastic)
+    end)
+end
+
+local function ShakeAnimation(obj)
+    local originalPos = obj.Position
+    for i = 1, 5 do
+        CreateTween(obj, {Position = originalPos + UDim2.new(0, math.random(-5, 5), 0, math.random(-5, 5))}, 0.1)
+        wait(0.1)
+    end
+    CreateTween(obj, {Position = originalPos}, 0.2)
+end
+
+local function SlideInAnimation(obj, direction)
+    local originalPos = obj.Position
+    if direction == "left" then
+        obj.Position = originalPos - UDim2.new(1, 0, 0, 0)
+    elseif direction == "right" then
+        obj.Position = originalPos + UDim2.new(1, 0, 0, 0)
+    elseif direction == "top" then
+        obj.Position = originalPos - UDim2.new(0, 0, 1, 0)
+    elseif direction == "bottom" then
+        obj.Position = originalPos + UDim2.new(0, 0, 1, 0)
+    end
+    CreateTween(obj, {Position = originalPos}, 0.6, Enum.EasingStyle.Back)
+end
+
+local function CreateParticleEffect(parent)
+    for i = 1, 10 do
+        local particle = Instance.new("Frame")
+        particle.Size = UDim2.new(0, math.random(3, 8), 0, math.random(3, 8))
+        particle.Position = UDim2.new(0.5, math.random(-50, 50), 0.5, math.random(-50, 50))
+        particle.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
+        particle.BorderSizePixel = 0
+        particle.ZIndex = 100
+        particle.Parent = parent
+        
+        CreateUICorner(10).Parent = particle
+        
+        CreateTween(particle, {
+            Position = particle.Position + UDim2.new(0, math.random(-100, 100), 0, math.random(-100, 100)),
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 0, 0, 0)
+        }, 1, Enum.EasingStyle.Quad)
+        
+        spawn(function()
+            wait(1)
+            particle:Destroy()
+        end)
+    end
+end
+
+local function GlowEffect(obj)
+    local glow = obj:Clone()
+    glow.Name = "Glow"
+    glow.Size = obj.Size + UDim2.new(0, 10, 0, 10)
+    glow.Position = obj.Position - UDim2.new(0, 5, 0, 5)
+    glow.BackgroundTransparency = 0.7
+    glow.ZIndex = obj.ZIndex - 1
+    glow.Parent = obj.Parent
+    
+    CreateTween(glow, {BackgroundTransparency = 1, Size = glow.Size + UDim2.new(0, 20, 0, 20)}, 1)
+    
+    spawn(function()
+        wait(1)
+        glow:Destroy()
+    end)
 end
 
 local function CreateUICorner(radius)
@@ -351,7 +430,11 @@ local function CreateMainScreen()
             infoLabel.Parent = card
             
             card.MouseEnter:Connect(function()
-                CreateTween(card, {Size = UDim2.new(0, 150, 0, 210)}, 0.3)
+                CreateTween(card, {
+                    Size = UDim2.new(0, 150, 0, 210),
+                    Rotation = 2
+                }, 0.3, Enum.EasingStyle.Back)
+                
                 -- Efecto de brillo al hacer hover
                 local hoverGradient = CreateGradient({
                     Color3.fromRGB(60, 60, 60),
@@ -359,10 +442,17 @@ local function CreateMainScreen()
                 })
                 hoverGradient.Rotation = 135
                 hoverGradient.Parent = card
+                
+                -- Efecto de pulso en el thumbnail
+                PulseAnimation(thumbLabel)
             end)
             
             card.MouseLeave:Connect(function()
-                CreateTween(card, {Size = UDim2.new(0, 140, 0, 200)}, 0.3)
+                CreateTween(card, {
+                    Size = UDim2.new(0, 140, 0, 200),
+                    Rotation = 0
+                }, 0.3, Enum.EasingStyle.Quad)
+                
                 -- Restaurar gradiente original
                 for _, child in ipairs(card:GetChildren()) do
                     if child:IsA("UIGradient") then
@@ -383,14 +473,23 @@ local function CreateMainScreen()
         end
     end
     
-    -- Cargar animaciones
+    -- Cargar animaciones con efectos
     spawn(function()
         local categories = {"Recientes", "Terror", "Comedia", "Accion", "Drama", "Aventura"}
         
-        for _, category in ipairs(categories) do
+        -- Animación de entrada del logo
+        SlideInAnimation(logo, "left")
+        wait(0.2)
+        SlideInAnimation(searchBar, "top")
+        wait(0.2)
+        SlideInAnimation(createBtn, "right")
+        
+        for i, category in ipairs(categories) do
             local anims = GetAnimations:InvokeServer(category)
             if anims and #anims > 0 then
                 CreateCarousel(category, anims, scrollFrame)
+                -- Animar cada carrusel con delay
+                wait(0.3)
             end
         end
         
@@ -419,6 +518,10 @@ function OpenAnimationDetails(anim)
     detailsFrame.Parent = screenGui
     detailsFrame.ZIndex = 5
     
+    -- Animación de entrada con fade
+    detailsFrame.BackgroundTransparency = 1
+    CreateTween(detailsFrame, {BackgroundTransparency = 0}, 0.5)
+    
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 50, 0, 50)
     closeBtn.Position = UDim2.new(0, 10, 0, 10)
@@ -433,9 +536,16 @@ function OpenAnimationDetails(anim)
     CreateUICorner(25).Parent = closeBtn
     
     closeBtn.MouseButton1Click:Connect(function()
+        CreateTween(detailsFrame, {BackgroundTransparency = 1}, 0.3)
+        CreateTween(closeBtn, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
+        wait(0.3)
         detailsFrame:Destroy()
         if mainScreen then mainScreen.Visible = true end
     end)
+    
+    -- Animación de entrada del botón
+    closeBtn.Size = UDim2.new(0, 0, 0, 0)
+    CreateTween(closeBtn, {Size = UDim2.new(0, 50, 0, 50)}, 0.4, Enum.EasingStyle.Elastic)
     
     local scrollFrame = Instance.new("ScrollingFrame")
     scrollFrame.Size = UDim2.new(1, 0, 1, -70)
@@ -588,6 +698,10 @@ function PlayAnimationScreen(anim, parentFrame)
     playerFrame.Parent = screenGui
     playerFrame.ZIndex = 10
     
+    -- Animación de entrada del reproductor
+    playerFrame.BackgroundTransparency = 1
+    CreateTween(playerFrame, {BackgroundTransparency = 0}, 0.4)
+    
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1, -20, 1, -100)
     container.Position = UDim2.new(0, 10, 0, 50)
@@ -613,6 +727,10 @@ function PlayAnimationScreen(anim, parentFrame)
     canvas.Parent = container
     
     CreateUICorner(15).Parent = canvas
+    
+    -- Animación de entrada del canvas
+    canvas.Size = UDim2.new(0, 0, 0, 0)
+    CreateTween(canvas, {Size = UDim2.new(1, -20, 1, -20)}, 0.6, Enum.EasingStyle.Back)
     
     local aspectRatio = Instance.new("UIAspectRatioConstraint")
     aspectRatio.AspectRatio = 1.33
@@ -906,9 +1024,12 @@ function CreateEditorScreen()
         toolBtn.MouseButton1Click:Connect(function()
             currentTool = tool.name
             for _, tb in ipairs(toolButtons) do
-                tb.btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                tb.btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                CreateTween(tb.btn, {Size = UDim2.new(0, 60, 0, 60)}, 0.2)
             end
             toolBtn.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
+            CreateTween(toolBtn, {Size = UDim2.new(0, 65, 0, 65)}, 0.2, Enum.EasingStyle.Elastic)
+            PulseAnimation(toolBtn)
         end)
     end
     
@@ -1320,6 +1441,10 @@ function CreateEditorScreen()
                 currentFrame = i
                 RefreshCanvas()
                 UpdateTimeline()
+                
+                -- Animación de selección
+                CreateTween(frameBtn, {Size = UDim2.new(0, 70, 0, 70)}, 0.1)
+                CreateTween(frameBtn, {Size = UDim2.new(0, 60, 0, 60)}, 0.2, Enum.EasingStyle.Elastic)
             end)
         end
         
@@ -1366,6 +1491,16 @@ function OpenPublishDialog(editorFrame)
     dialog.ScrollBarThickness = 4
     dialog.ScrollBarImageColor3 = Color3.fromRGB(229, 9, 20)
     dialog.Parent = dialogBg
+    
+    -- Animación de entrada del diálogo
+    dialog.Size = UDim2.new(0, 0, 0, 0)
+    dialog.Position = UDim2.new(0.5, 0, 0.5, 0)
+    dialog.AnchorPoint = Vector2.new(0.5, 0.5)
+    CreateTween(dialog, {
+        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0)
+    }, 0.5, Enum.EasingStyle.Back)
+    dialog.AnchorPoint = Vector2.new(0, 0)
     
     local dialogLayout = Instance.new("UIListLayout")
     dialogLayout.Padding = UDim.new(0, 10)
@@ -1656,6 +1791,10 @@ function OpenPublishDialog(editorFrame)
     local publishBtnFinal = CreateButton(animationToEdit and "GUARDAR" or "PUBLICAR", actionContainer)
     publishBtnFinal.Size = UDim2.new(0.5, -5, 1, 0)
     publishBtnFinal.MouseButton1Click:Connect(function()
+        -- Efectos especiales al publicar
+        CreateParticleEffect(publishBtnFinal)
+        GlowEffect(publishBtnFinal)
+        
         local title = titleBox.Text
         local description = descBox.Text
         
@@ -1704,12 +1843,22 @@ function OpenPublishDialog(editorFrame)
         
         CreateUICorner(4).Parent = loadingBar
         
-        -- Animación de carga
+        -- Animación de carga con efectos
         spawn(function()
-            for i = 1, 100, 2 do
+            for i = 1, 100, 3 do
                 loadingBar.Size = UDim2.new(i/100, 0, 1, 0)
-                wait(0.02)
+                
+                -- Efecto de pulso en la barra
+                if i % 20 == 0 then
+                    CreateTween(loadingBar, {Size = UDim2.new(i/100, 0, 1, 5)}, 0.1)
+                    CreateTween(loadingBar, {Size = UDim2.new(i/100, 0, 1, 0)}, 0.1)
+                end
+                
+                wait(0.03)
             end
+            
+            -- Efecto final
+            CreateParticleEffect(loadingScreen)
         end)
         
         local animationData = {
@@ -1799,11 +1948,19 @@ PublishAnimation.OnClientEvent:Connect(function(action, data)
         notifText.Parent = notif
         
         notif.Position = UDim2.new(1, 20, 0, 20)
-        CreateTween(notif, {Position = UDim2.new(1, -370, 0, 20)}, 0.5)
+        CreateTween(notif, {Position = UDim2.new(1, -370, 0, 20)}, 0.5, Enum.EasingStyle.Back)
+        
+        -- Efecto de pulso cada 2 segundos
+        spawn(function()
+            for i = 1, 2 do
+                wait(2)
+                PulseAnimation(notifIcon)
+            end
+        end)
         
         wait(4)
         
-        CreateTween(notif, {Position = UDim2.new(1, 20, 0, 20)}, 0.5)
+        CreateTween(notif, {Position = UDim2.new(1, 20, 0, 20)}, 0.5, Enum.EasingStyle.Back)
         wait(0.5)
         notif:Destroy()
     end
