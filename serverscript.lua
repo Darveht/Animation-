@@ -5,9 +5,19 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
  
--- DataStores
-local AnimationsStore = DataStoreService:GetDataStore("AnimFlixAnimations_v1")
-local UserDataStore = DataStoreService:GetDataStore("AnimFlixUsers_v1")
+-- DataStores (con manejo de errores)
+local AnimationsStore, UserDataStore
+local success, err = pcall(function()
+    AnimationsStore = DataStoreService:GetDataStore("AnimFlixAnimations_v1")
+    UserDataStore = DataStoreService:GetDataStore("AnimFlixUsers_v1")
+end)
+
+if not success then
+    warn("[AnimFlix] Error creando DataStores: " .. tostring(err))
+    -- Crear versiones dummy para testing
+    AnimationsStore = {GetAsync = function() return {} end, SetAsync = function() end}
+    UserDataStore = {GetAsync = function() return {} end, SetAsync = function() end}
+end
  
 -- RemoteEvents y RemoteFunctions
 local RemoteEvents = ReplicatedStorage:FindFirstChild("AnimFlixRemotes") or Instance.new("Folder")
