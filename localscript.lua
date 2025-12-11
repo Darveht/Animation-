@@ -53,19 +53,23 @@ end
 
 -- Animaciones especiales
 local function PulseAnimation(obj)
-    local pulse = CreateTween(obj, {Size = obj.Size + UDim2.new(0, 10, 0, 10)}, 0.5, Enum.EasingStyle.Elastic)
-    pulse.Completed:Connect(function()
-        CreateTween(obj, {Size = obj.Size - UDim2.new(0, 10, 0, 10)}, 0.5, Enum.EasingStyle.Elastic)
+    local originalSize = obj.Size
+    CreateTween(obj, {Size = originalSize + UDim2.new(0, 5, 0, 5)}, 0.3, Enum.EasingStyle.Quad)
+    spawn(function()
+        wait(0.3)
+        CreateTween(obj, {Size = originalSize}, 0.3, Enum.EasingStyle.Quad)
     end)
 end
 
 local function ShakeAnimation(obj)
     local originalPos = obj.Position
-    for i = 1, 5 do
-        CreateTween(obj, {Position = originalPos + UDim2.new(0, math.random(-5, 5), 0, math.random(-5, 5))}, 0.1)
-        wait(0.1)
-    end
-    CreateTween(obj, {Position = originalPos}, 0.2)
+    spawn(function()
+        for i = 1, 3 do
+            CreateTween(obj, {Position = originalPos + UDim2.new(0, math.random(-3, 3), 0, math.random(-3, 3))}, 0.1)
+            wait(0.1)
+        end
+        CreateTween(obj, {Position = originalPos}, 0.2)
+    end)
 end
 
 local function SlideInAnimation(obj, direction)
@@ -477,12 +481,18 @@ local function CreateMainScreen()
     spawn(function()
         local categories = {"Recientes", "Terror", "Comedia", "Accion", "Drama", "Aventura"}
         
-        -- Animación de entrada del logo
-        SlideInAnimation(logo, "left")
-        wait(0.2)
-        SlideInAnimation(searchBar, "top")
-        wait(0.2)
-        SlideInAnimation(createBtn, "right")
+        -- Animaciones de entrada simples
+        spawn(function()
+            SlideInAnimation(logo, "left")
+        end)
+        spawn(function()
+            wait(0.2)
+            SlideInAnimation(searchBar, "top")
+        end)
+        spawn(function()
+            wait(0.4)
+            SlideInAnimation(createBtn, "right")
+        end)
         
         for i, category in ipairs(categories) do
             local anims = GetAnimations:InvokeServer(category)
@@ -681,10 +691,11 @@ function OpenAnimationDetails(anim)
     end)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 80)
     
-    dialogLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        dialog.CanvasSize = UDim2.new(0, 0, 0, dialogLayout.AbsoluteContentSize.Y + 60)
+    -- Actualizar tamaño del scroll
+    spawn(function()
+        wait(0.1)
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 80)
     end)
-    dialog.CanvasSize = UDim2.new(0, 0, 0, dialogLayout.AbsoluteContentSize.Y + 60)
 end
 
 -- ==================== REPRODUCTOR DE ANIMACIÓN ====================
@@ -729,8 +740,11 @@ function PlayAnimationScreen(anim, parentFrame)
     CreateUICorner(15).Parent = canvas
     
     -- Animación de entrada del canvas
-    canvas.Size = UDim2.new(0, 0, 0, 0)
-    CreateTween(canvas, {Size = UDim2.new(1, -20, 1, -20)}, 0.6, Enum.EasingStyle.Back)
+    spawn(function()
+        local originalSize = canvas.Size
+        canvas.Size = UDim2.new(0, 0, 0, 0)
+        CreateTween(canvas, {Size = originalSize}, 0.6, Enum.EasingStyle.Back)
+    end)
     
     local aspectRatio = Instance.new("UIAspectRatioConstraint")
     aspectRatio.AspectRatio = 1.33
@@ -1493,14 +1507,17 @@ function OpenPublishDialog(editorFrame)
     dialog.Parent = dialogBg
     
     -- Animación de entrada del diálogo
-    dialog.Size = UDim2.new(0, 0, 0, 0)
-    dialog.Position = UDim2.new(0.5, 0, 0.5, 0)
-    dialog.AnchorPoint = Vector2.new(0.5, 0.5)
-    CreateTween(dialog, {
-        Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0)
-    }, 0.5, Enum.EasingStyle.Back)
-    dialog.AnchorPoint = Vector2.new(0, 0)
+    spawn(function()
+        dialog.Size = UDim2.new(0, 0, 0, 0)
+        dialog.Position = UDim2.new(0.5, 0, 0.5, 0)
+        dialog.AnchorPoint = Vector2.new(0.5, 0.5)
+        CreateTween(dialog, {
+            Size = UDim2.new(1, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0)
+        }, 0.5, Enum.EasingStyle.Back)
+        wait(0.5)
+        dialog.AnchorPoint = Vector2.new(0, 0)
+    end)
     
     local dialogLayout = Instance.new("UIListLayout")
     dialogLayout.Padding = UDim.new(0, 10)
