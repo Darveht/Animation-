@@ -10,13 +10,18 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Esperar RemoteEvents
-local RemoteEvents = ReplicatedStorage:WaitForChild("AnimFlixRemotes")
-local PublishAnimation = RemoteEvents:WaitForChild("PublishAnimation")
-local GetAnimations = RemoteEvents:WaitForChild("GetAnimations")
-local PlayAnimation = RemoteEvents:WaitForChild("PlayAnimation")
-local LikeAnimation = RemoteEvents:WaitForChild("LikeAnimation")
-local EditAnimation = RemoteEvents:WaitForChild("EditAnimation")
+-- Esperar RemoteEvents (con timeout)
+local RemoteEvents = ReplicatedStorage:WaitForChild("AnimFlixRemotes", 10)
+if not RemoteEvents then
+    warn("[AnimFlix] No se encontraron RemoteEvents")
+    return
+end
+
+local PublishAnimation = RemoteEvents:WaitForChild("PublishAnimation", 5)
+local GetAnimations = RemoteEvents:WaitForChild("GetAnimations", 5)
+local PlayAnimation = RemoteEvents:WaitForChild("PlayAnimation", 5)
+local LikeAnimation = RemoteEvents:WaitForChild("LikeAnimation", 5)
+local EditAnimation = RemoteEvents:WaitForChild("EditAnimation", 5)
 
 -- Variables globales del editor
 local frames = {}
