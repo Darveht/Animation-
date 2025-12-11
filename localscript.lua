@@ -1,4 +1,4 @@
--- LOCAL SCRIPT - AnimFlix Complete UI System (TikTok Style)
+-- LOCAL SCRIPT - AnimFlix Complete UI System (Netflix Style)
 -- Coloca este script en StarterPlayer > StarterPlayerScripts
 
 local Players = game:GetService("Players")
@@ -51,10 +51,33 @@ local function CreateUICorner(radius)
     return corner
 end
 
+local function CreateGradient(colors, transparency)
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new(colors)
+    if transparency then
+        gradient.Transparency = NumberSequence.new(transparency)
+    end
+    return gradient
+end
+
+local function CreateShadow(parent)
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.Size = UDim2.new(1, 6, 1, 6)
+    shadow.Position = UDim2.new(0, -3, 0, -3)
+    shadow.BackgroundTransparency = 1
+    shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.ImageTransparency = 0.8
+    shadow.ZIndex = parent.ZIndex - 1
+    shadow.Parent = parent.Parent
+    return shadow
+end
+
 local function CreateButton(text, parent, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(0, 160, 0, 45)
-    button.BackgroundColor3 = Color3.fromRGB(254, 44, 85) -- TikTok rosa
+    button.BackgroundColor3 = Color3.fromRGB(229, 9, 20) -- Netflix rojo
     button.Text = text
     button.TextColor3 = Color3.new(1, 1, 1)
     button.Font = Enum.Font.GothamBold
@@ -64,10 +87,18 @@ local function CreateButton(text, parent, callback)
     
     CreateUICorner(22).Parent = button
     
+    -- Gradiente Netflix
+    local gradient = CreateGradient({
+        Color3.fromRGB(229, 9, 20),
+        Color3.fromRGB(180, 7, 15)
+    })
+    gradient.Rotation = 45
+    gradient.Parent = button
+    
     button.MouseButton1Click:Connect(function()
-        CreateTween(button, {BackgroundColor3 = Color3.fromRGB(200, 35, 68)}, 0.1)
+        CreateTween(button, {BackgroundColor3 = Color3.fromRGB(180, 7, 15)}, 0.1)
         wait(0.1)
-        CreateTween(button, {BackgroundColor3 = Color3.fromRGB(254, 44, 85)}, 0.1)
+        CreateTween(button, {BackgroundColor3 = Color3.fromRGB(229, 9, 20)}, 0.1)
         if callback then callback() end
     end)
     
@@ -77,7 +108,7 @@ end
 local function CreateSearchBar(parent)
     local searchContainer = Instance.new("Frame")
     searchContainer.Size = UDim2.new(0.4, 0, 0, 50)
-    searchContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    searchContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     searchContainer.BorderSizePixel = 0
     
     CreateUICorner(25).Parent = searchContainer
@@ -117,7 +148,7 @@ local function CreateMainScreen()
     mainFrame.Name = "MainScreen"
     mainFrame.Size = UDim2.new(1, 0, 1, 0) -- FULL SCREEN
     mainFrame.Position = UDim2.new(0, 0, 0, 0) -- SIN MÁRGENES
-    mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Negro TikTok
+    mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Negro Netflix
     mainFrame.BorderSizePixel = 0
     mainFrame.Parent = screenGui
     mainFrame.Visible = true
@@ -125,10 +156,18 @@ local function CreateMainScreen()
     -- Barra superior TikTok Style
     local topBar = Instance.new("Frame")
     topBar.Size = UDim2.new(1, 0, 0, 60)
-    topBar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    topBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     topBar.BorderSizePixel = 0
     topBar.Parent = mainFrame
     topBar.Name = "TopBar"
+    
+    -- Gradiente sutil en la barra superior
+    local topBarGradient = CreateGradient({
+        Color3.fromRGB(0, 0, 0),
+        Color3.fromRGB(20, 20, 20)
+    })
+    topBarGradient.Rotation = 90
+    topBarGradient.Parent = topBar
     
     local topBarLayout = Instance.new("UIListLayout")
     topBarLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -146,8 +185,8 @@ local function CreateMainScreen()
     logo.Name = "Logo"
     logo.Size = UDim2.new(0, 150, 1, -10)
     logo.BackgroundTransparency = 1
-    logo.Text = "🎬 AnimFlix"
-    logo.TextColor3 = Color3.fromRGB(254, 44, 85)
+    logo.Text = "ANIMFLIX"
+    logo.TextColor3 = Color3.fromRGB(229, 9, 20)
     logo.Font = Enum.Font.GothamBold
     logo.TextSize = 24
     logo.TextXAlignment = Enum.TextXAlignment.Left
@@ -207,7 +246,7 @@ local function CreateMainScreen()
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.BorderSizePixel = 0
     scrollFrame.ScrollBarThickness = 4
-    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(254, 44, 85)
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(229, 9, 20)
     scrollFrame.Parent = mainFrame
     
     local scrollPadding = Instance.new("UIPadding")
@@ -257,16 +296,24 @@ local function CreateMainScreen()
         for _, anim in ipairs(animations) do
             local card = Instance.new("TextButton")
             card.Size = UDim2.new(0, 140, 0, 200)
-            card.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            card.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             card.BorderSizePixel = 0
             card.Text = ""
             card.Parent = carouselScroll
             
             CreateUICorner(15).Parent = card
             
+            -- Gradiente sutil en las tarjetas
+            local cardGradient = CreateGradient({
+                Color3.fromRGB(40, 40, 40),
+                Color3.fromRGB(30, 30, 30)
+            })
+            cardGradient.Rotation = 135
+            cardGradient.Parent = card
+            
             local thumbnail = Instance.new("Frame")
             thumbnail.Size = UDim2.new(1, 0, 0, 120)
-            thumbnail.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            thumbnail.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
             thumbnail.BorderSizePixel = 0
             thumbnail.Parent = card
             
@@ -304,11 +351,30 @@ local function CreateMainScreen()
             infoLabel.Parent = card
             
             card.MouseEnter:Connect(function()
-                CreateTween(card, {Size = UDim2.new(0, 150, 0, 210)}, 0.2)
+                CreateTween(card, {Size = UDim2.new(0, 150, 0, 210)}, 0.3)
+                -- Efecto de brillo al hacer hover
+                local hoverGradient = CreateGradient({
+                    Color3.fromRGB(60, 60, 60),
+                    Color3.fromRGB(45, 45, 45)
+                })
+                hoverGradient.Rotation = 135
+                hoverGradient.Parent = card
             end)
             
             card.MouseLeave:Connect(function()
-                CreateTween(card, {Size = UDim2.new(0, 140, 0, 200)}, 0.2)
+                CreateTween(card, {Size = UDim2.new(0, 140, 0, 200)}, 0.3)
+                -- Restaurar gradiente original
+                for _, child in ipairs(card:GetChildren()) do
+                    if child:IsA("UIGradient") then
+                        child:Destroy()
+                    end
+                end
+                cardGradient = CreateGradient({
+                    Color3.fromRGB(40, 40, 40),
+                    Color3.fromRGB(30, 30, 30)
+                })
+                cardGradient.Rotation = 135
+                cardGradient.Parent = card
             end)
             
             card.MouseButton1Click:Connect(function()
@@ -348,7 +414,7 @@ function OpenAnimationDetails(anim)
     detailsFrame.Name = "DetailsScreen"
     detailsFrame.Size = UDim2.new(1, 0, 1, 0)
     detailsFrame.Position = UDim2.new(0, 0, 0, 0)
-    detailsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    detailsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     detailsFrame.BorderSizePixel = 0
     detailsFrame.Parent = screenGui
     detailsFrame.ZIndex = 5
@@ -356,7 +422,7 @@ function OpenAnimationDetails(anim)
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 50, 0, 50)
     closeBtn.Position = UDim2.new(0, 10, 0, 10)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     closeBtn.Text = "✕"
     closeBtn.TextSize = 24
     closeBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -377,7 +443,7 @@ function OpenAnimationDetails(anim)
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.BorderSizePixel = 0
     scrollFrame.ScrollBarThickness = 4
-    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(254, 44, 85)
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(229, 9, 20)
     scrollFrame.Parent = detailsFrame
     
     local layout = Instance.new("UIListLayout")
@@ -485,7 +551,7 @@ function OpenAnimationDetails(anim)
     likeBtn.MouseButton1Click:Connect(function()
         LikeAnimation:FireServer(anim.id)
         likeBtn.Text = "✓ TE GUSTA"
-        likeBtn.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+        likeBtn.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
     end)
     
     -- Botón EDITAR (solo si eres el creador)
@@ -517,7 +583,7 @@ function PlayAnimationScreen(anim, parentFrame)
     local playerFrame = Instance.new("Frame")
     playerFrame.Size = UDim2.new(1, 0, 1, 0)
     playerFrame.Position = UDim2.new(0, 0, 0, 0)
-    playerFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    playerFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     playerFrame.BorderSizePixel = 0
     playerFrame.Parent = screenGui
     playerFrame.ZIndex = 10
@@ -607,11 +673,19 @@ function PlayAnimationScreen(anim, parentFrame)
     controlsFrame.Size = UDim2.new(1, 0, 0, 60)
     controlsFrame.Position = UDim2.new(0.5, 0, 1, -70)
     controlsFrame.AnchorPoint = Vector2.new(0.5, 0)
-    controlsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    controlsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     controlsFrame.BorderSizePixel = 0
     controlsFrame.Parent = playerFrame
     
     CreateUICorner(10).Parent = controlsFrame
+    
+    -- Gradiente en controles
+    local controlsGradient = CreateGradient({
+        Color3.fromRGB(0, 0, 0),
+        Color3.fromRGB(25, 25, 25)
+    })
+    controlsGradient.Rotation = 90
+    controlsGradient.Parent = controlsFrame
     
     local controlsLayout = Instance.new("UIListLayout")
     controlsLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -622,7 +696,7 @@ function PlayAnimationScreen(anim, parentFrame)
     
     local playPauseBtn = Instance.new("TextButton")
     playPauseBtn.Size = UDim2.new(0, 50, 0, 50)
-    playPauseBtn.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+    playPauseBtn.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
     playPauseBtn.Text = "⏸"
     playPauseBtn.TextSize = 24
     playPauseBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -689,14 +763,14 @@ function CreateEditorScreen()
     editorFrame.Name = "EditorScreen"
     editorFrame.Size = UDim2.new(1, 0, 1, 0)
     editorFrame.Position = UDim2.new(0, 0, 0, 0)
-    editorFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    editorFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     editorFrame.BorderSizePixel = 0
     editorFrame.Parent = screenGui
     editorFrame.Visible = true
     
     local topBar = Instance.new("Frame")
     topBar.Size = UDim2.new(1, 0, 0, 60)
-    topBar.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    topBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     topBar.BorderSizePixel = 0
     topBar.Parent = editorFrame
     
@@ -716,7 +790,7 @@ function CreateEditorScreen()
     editorTitle.Size = UDim2.new(0.5, 0, 1, 0)
     editorTitle.BackgroundTransparency = 1
     editorTitle.Text = animationToEdit and "✏️ EDITAR ANIMACIÓN" or "✏️ CREAR ANIMACIÓN"
-    editorTitle.TextColor3 = Color3.fromRGB(254, 44, 85)
+    editorTitle.TextColor3 = Color3.fromRGB(229, 9, 20)
     editorTitle.Font = Enum.Font.GothamBold
     editorTitle.TextSize = 20
     editorTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -773,7 +847,7 @@ function CreateEditorScreen()
     -- Panel de herramientas
     local toolPanel = Instance.new("Frame")
     toolPanel.Size = UDim2.new(0, 150, 1, 0)
-    toolPanel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    toolPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     toolPanel.BorderSizePixel = 0
     toolPanel.Parent = editorContainer
     
@@ -793,7 +867,7 @@ function CreateEditorScreen()
     toolTitle.Size = UDim2.new(1, 0, 0, 25)
     toolTitle.BackgroundTransparency = 1
     toolTitle.Text = "🎨 HERRAMIENTAS"
-    toolTitle.TextColor3 = Color3.fromRGB(254, 44, 85)
+    toolTitle.TextColor3 = Color3.fromRGB(229, 9, 20)
     toolTitle.Font = Enum.Font.GothamBold
     toolTitle.TextSize = 12
     toolTitle.Parent = toolPanel
@@ -819,7 +893,7 @@ function CreateEditorScreen()
     for i, tool in ipairs(tools) do
         local toolBtn = Instance.new("TextButton")
         toolBtn.Size = UDim2.new(0, 60, 0, 60)
-        toolBtn.BackgroundColor3 = tool.name == currentTool and Color3.fromRGB(254, 44, 85) or Color3.fromRGB(40, 40, 40)
+        toolBtn.BackgroundColor3 = tool.name == currentTool and Color3.fromRGB(229, 9, 20) or Color3.fromRGB(50, 50, 50)
         toolBtn.Text = tool.icon
         toolBtn.TextSize = 28
         toolBtn.BorderSizePixel = 0
@@ -834,7 +908,7 @@ function CreateEditorScreen()
             for _, tb in ipairs(toolButtons) do
                 tb.btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             end
-            toolBtn.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+            toolBtn.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
         end)
     end
     
@@ -866,7 +940,7 @@ function CreateEditorScreen()
     local sliderButton = Instance.new("TextButton")
     sliderButton.Size = UDim2.new(0, 20, 0, 20)
     sliderButton.Position = UDim2.new(0, -10, 0.5, -10)
-    sliderButton.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+    sliderButton.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
     sliderButton.Text = ""
     sliderButton.BorderSizePixel = 0
     sliderButton.Parent = thicknessSlider
@@ -953,12 +1027,12 @@ function CreateEditorScreen()
                 btn.BorderColor3 = Color3.fromRGB(100, 100, 100)
             end
             colorBtn.BorderSizePixel = 3
-            colorBtn.BorderColor3 = Color3.fromRGB(254, 44, 85)
+            colorBtn.BorderColor3 = Color3.fromRGB(229, 9, 20)
         end)
     end
     
     colorButtons[1].BorderSizePixel = 3
-    colorButtons[1].BorderColor3 = Color3.fromRGB(254, 44, 85)
+    colorButtons[1].BorderColor3 = Color3.fromRGB(229, 9, 20)
     
     -- Onion Skin Toggle
     local onionSkinBtn = Instance.new("TextButton")
@@ -1185,7 +1259,7 @@ function CreateEditorScreen()
     -- Timeline
     local timelinePanel = Instance.new("Frame")
     timelinePanel.Size = UDim2.new(1, 0, 0, 120)
-    timelinePanel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    timelinePanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     timelinePanel.BorderSizePixel = 0
     timelinePanel.Parent = canvasTimelineContainer
     
@@ -1201,7 +1275,7 @@ function CreateEditorScreen()
     timelineTitle.Position = UDim2.new(0, 0, 0, 5)
     timelineTitle.BackgroundTransparency = 1
     timelineTitle.Text = "🎞️ FRAMES"
-    timelineTitle.TextColor3 = Color3.fromRGB(254, 44, 85)
+    timelineTitle.TextColor3 = Color3.fromRGB(229, 9, 20)
     timelineTitle.Font = Enum.Font.GothamBold
     timelineTitle.TextSize = 14
     timelineTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -1232,7 +1306,7 @@ function CreateEditorScreen()
         for i = 1, math.max(#frames, 1) do
             local frameBtn = Instance.new("TextButton")
             frameBtn.Size = UDim2.new(0, 60, 0, 60)
-            frameBtn.BackgroundColor3 = i == currentFrame and Color3.fromRGB(254, 44, 85) or Color3.fromRGB(40, 40, 40)
+            frameBtn.BackgroundColor3 = i == currentFrame and Color3.fromRGB(229, 9, 20) or Color3.fromRGB(50, 50, 50)
             frameBtn.Text = tostring(i)
             frameBtn.TextColor3 = Color3.new(1, 1, 1)
             frameBtn.Font = Enum.Font.GothamBold
@@ -1286,11 +1360,11 @@ function OpenPublishDialog(editorFrame)
     local dialog = Instance.new("ScrollingFrame")
     dialog.Size = UDim2.new(1, 0, 1, 0)
     dialog.Position = UDim2.new(0, 0, 0, 0)
-    dialog.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    dialog.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     dialog.BorderSizePixel = 0
     dialog.ZIndex = 6
     dialog.ScrollBarThickness = 4
-    dialog.ScrollBarImageColor3 = Color3.fromRGB(254, 44, 85)
+    dialog.ScrollBarImageColor3 = Color3.fromRGB(229, 9, 20)
     dialog.Parent = dialogBg
     
     local dialogLayout = Instance.new("UIListLayout")
@@ -1311,7 +1385,7 @@ function OpenPublishDialog(editorFrame)
     dialogTitle.Size = UDim2.new(1, 0, 0, 40)
     dialogTitle.BackgroundTransparency = 1
     dialogTitle.Text = animationToEdit and "💾 GUARDAR CAMBIOS" or "📤 PUBLICAR ANIMACIÓN"
-    dialogTitle.TextColor3 = Color3.fromRGB(254, 44, 85)
+    dialogTitle.TextColor3 = Color3.fromRGB(229, 9, 20)
     dialogTitle.Font = Enum.Font.GothamBold
     dialogTitle.TextSize = 24
     dialogTitle.Parent = dialog
@@ -1328,7 +1402,7 @@ function OpenPublishDialog(editorFrame)
     
     local titleBox = Instance.new("TextBox")
     titleBox.Size = UDim2.new(1, 0, 0, 40)
-    titleBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    titleBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
     titleBox.Text = animationToEdit and animationToEdit.title or ""
     titleBox.PlaceholderText = "Mi increíble animación"
     titleBox.TextColor3 = Color3.new(1, 1, 1)
@@ -1352,7 +1426,7 @@ function OpenPublishDialog(editorFrame)
     
     local descBox = Instance.new("TextBox")
     descBox.Size = UDim2.new(1, 0, 0, 80)
-    descBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    descBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
     descBox.Text = animationToEdit and animationToEdit.description or ""
     descBox.PlaceholderText = "Describe tu animación..."
     descBox.TextColor3 = Color3.new(1, 1, 1)
@@ -1393,7 +1467,7 @@ function OpenPublishDialog(editorFrame)
     for i, cat in ipairs(categories) do
         local catBtn = Instance.new("TextButton")
         catBtn.Size = UDim2.new(0, 80, 1, 0)
-        catBtn.BackgroundColor3 = cat == selectedCategory and Color3.fromRGB(254, 44, 85) or Color3.fromRGB(60, 60, 60)
+        catBtn.BackgroundColor3 = cat == selectedCategory and Color3.fromRGB(229, 9, 20) or Color3.fromRGB(70, 70, 70)
         catBtn.Text = cat
         catBtn.TextColor3 = Color3.new(1, 1, 1)
         catBtn.Font = Enum.Font.GothamBold
@@ -1410,7 +1484,7 @@ function OpenPublishDialog(editorFrame)
                     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
                 end
             end
-            catBtn.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+            catBtn.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
         end)
     end
     
@@ -1440,7 +1514,7 @@ function OpenPublishDialog(editorFrame)
     for i, typ in ipairs(types) do
         local typeBtn = Instance.new("TextButton")
         typeBtn.Size = UDim2.new(0.5, -5, 1, 0)
-        typeBtn.BackgroundColor3 = typ == selectedType and Color3.fromRGB(254, 44, 85) or Color3.fromRGB(60, 60, 60)
+        typeBtn.BackgroundColor3 = typ == selectedType and Color3.fromRGB(229, 9, 20) or Color3.fromRGB(70, 70, 70)
         typeBtn.Text = typ == "Pelicula" and "🎬 PELÍCULA" or "📺 SERIE"
         typeBtn.TextColor3 = Color3.new(1, 1, 1)
         typeBtn.Font = Enum.Font.GothamBold
@@ -1457,7 +1531,7 @@ function OpenPublishDialog(editorFrame)
                     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
                 end
             end
-            typeBtn.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+            typeBtn.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
         end)
     end
     
@@ -1474,7 +1548,7 @@ function OpenPublishDialog(editorFrame)
     
     local thumbnailContainer = Instance.new("Frame")
     thumbnailContainer.Size = UDim2.new(1, 0, 0, 150)
-    thumbnailContainer.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    thumbnailContainer.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
     thumbnailContainer.BorderSizePixel = 0
     thumbnailContainer.Parent = dialog
     
@@ -1488,7 +1562,7 @@ function OpenPublishDialog(editorFrame)
     thumbnailScroll.BackgroundTransparency = 1
     thumbnailScroll.BorderSizePixel = 0
     thumbnailScroll.ScrollBarThickness = 4
-    thumbnailScroll.ScrollBarImageColor3 = Color3.fromRGB(254, 44, 85)
+    thumbnailScroll.ScrollBarImageColor3 = Color3.fromRGB(229, 9, 20)
     thumbnailScroll.ScrollingDirection = Enum.ScrollingDirection.X
     thumbnailScroll.Parent = thumbnailContainer
     
@@ -1500,7 +1574,7 @@ function OpenPublishDialog(editorFrame)
     for i, frameData in ipairs(frames) do
         local thumbBtn = Instance.new("TextButton")
         thumbBtn.Size = UDim2.new(0, 120, 0, 130)
-        thumbBtn.BackgroundColor3 = i == selectedThumbnailIndex and Color3.fromRGB(254, 44, 85) or Color3.fromRGB(60, 60, 60)
+        thumbBtn.BackgroundColor3 = i == selectedThumbnailIndex and Color3.fromRGB(229, 9, 20) or Color3.fromRGB(70, 70, 70)
         thumbBtn.BorderSizePixel = 0
         thumbBtn.Text = ""
         thumbBtn.Parent = thumbnailScroll
@@ -1551,7 +1625,7 @@ function OpenPublishDialog(editorFrame)
                     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
                 end
             end
-            thumbBtn.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+            thumbBtn.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
         end)
     end
     
@@ -1595,7 +1669,7 @@ function OpenPublishDialog(editorFrame)
         local loadingScreen = Instance.new("Frame")
         loadingScreen.Size = UDim2.new(1, 0, 1, 0)
         loadingScreen.Position = UDim2.new(0, 0, 0, 0)
-        loadingScreen.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        loadingScreen.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         loadingScreen.BorderSizePixel = 0
         loadingScreen.ZIndex = 100
         loadingScreen.Parent = screenGui
@@ -1623,7 +1697,7 @@ function OpenPublishDialog(editorFrame)
         
         local loadingBar = Instance.new("Frame")
         loadingBar.Size = UDim2.new(0, 0, 1, 0)
-        loadingBar.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+        loadingBar.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
         loadingBar.BorderSizePixel = 0
         loadingBar.ZIndex = 102
         loadingBar.Parent = loadingBarBg
@@ -1702,7 +1776,7 @@ PublishAnimation.OnClientEvent:Connect(function(action, data)
         local notifIcon = Instance.new("TextLabel")
         notifIcon.Size = UDim2.new(0, 60, 0, 60)
         notifIcon.Position = UDim2.new(0, 10, 0, 10)
-        notifIcon.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+        notifIcon.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
         notifIcon.Text = "🎬"
         notifIcon.TextSize = 32
         notifIcon.BorderSizePixel = 0
@@ -1746,7 +1820,7 @@ LikeAnimation.OnClientEvent:Connect(function(status, likes)
     notif.Parent = screenGui
     
     if status == "Success" then
-        notif.BackgroundColor3 = Color3.fromRGB(254, 44, 85)
+        notif.BackgroundColor3 = Color3.fromRGB(229, 9, 20)
         local text = Instance.new("TextLabel")
         text.Size = UDim2.new(1, 0, 1, 0)
         text.BackgroundTransparency = 1
@@ -1780,5 +1854,5 @@ end)
 
 CreateMainScreen()
 
-print("[AnimFlix] Sistema de UI cargado - Estilo TikTok")
+print("[AnimFlix] Sistema de UI cargado - Estilo Netflix")
 
